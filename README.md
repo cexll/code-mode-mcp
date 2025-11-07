@@ -2,6 +2,17 @@
 
 将 MCP (Model Context Protocol) 从传统的直接工具调用模式改造为 Code Mode（代码执行模式）。
 
+---
+
+## 📖 文档导航
+
+- **[🚀 快速开始](QUICKSTART.md)** - 5 分钟上手指南
+- **[📘 完整使用指南](USAGE.md)** - 详细配置和使用说明
+- **[🔄 迁移指南](MIGRATION.md)** - 从传统 MCP 迁移
+- **[📊 项目总结](SUMMARY.md)** - 完整功能清单
+
+---
+
 ## 核心概念
 
 **传统 MCP 模式**：
