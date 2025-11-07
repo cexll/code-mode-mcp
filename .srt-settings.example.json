@@ -1,0 +1,34 @@
+{
+  "network": {
+    "allowedDomains": [
+      "github.com",
+      "*.github.com",
+      "api.github.com",
+      "npmjs.org",
+      "*.npmjs.org",
+      "anthropic.com",
+      "*.anthropic.com"
+    ],
+    "deniedDomains": []
+  },
+  "filesystem": {
+    "denyRead": [
+      "~/.ssh",
+      "~/.aws",
+      "~/.config/gcloud"
+    ],
+    "allowWrite": [
+      ".",
+      "/tmp"
+    ],
+    "denyWrite": [
+      ".env",
+      ".git",
+      "node_modules"
+    ]
+  },
+  "ignoreViolations": {
+    "*": ["/usr/bin", "/System"],
+    "npm": ["/private/tmp"]
+  }
+}

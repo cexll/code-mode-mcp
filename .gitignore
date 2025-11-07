@@ -1,0 +1,11 @@
+node_modules/
+dist/
+generated-api/
+*.log
+.env
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+.idea/

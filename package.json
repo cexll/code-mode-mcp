@@ -1,0 +1,22 @@
+{
+  "name": "mcp-code-mode-demo",
+  "version": "1.0.0",
+  "description": "MCP Code Mode 实现示例",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "generate-api": "tsx src/generator.ts",
+    "example": "tsx examples/basic.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "@anthropic-ai/sandbox-runtime": "^0.1.0",
+    "@modelcontextprotocol/sdk": "^1.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
