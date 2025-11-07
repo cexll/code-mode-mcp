@@ -20,8 +20,12 @@ async function main() {
     // 示例 2: Fetch MCP Server
     await generator.connectServer(
       'fetch',
-      'npx',
-      ['-y', '@modelcontextprotocol/server-fetch']
+      'uvx',
+      [
+        '--from',
+        'git+https://github.com/cexll/mcp-server-fetch.git',
+        'mcp-server-fetch',
+      ]
     );
 
     // 你可以添加更多 MCP servers

@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "code-mode": {
+      "command": "node",
+      "args": [
+        "/Users/chenwenjie/Downloads/mcp-code-mode-demo/dist/server.js"
+      ],
+      "description": "Code Mode - 在沙箱中执行 TypeScript 代码，可调用 MCP 工具（filesystem、fetch）",
+      "env": {
+        "NODE_OPTIONS": "--no-warnings"
+      }
+    }
+  }
+}
