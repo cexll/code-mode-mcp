@@ -9,3 +9,6 @@ generated-api/
 *~
 .vscode/
 .idea/
+.sandbox-temp
+coverage
+.claude

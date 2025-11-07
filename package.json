@@ -1,22 +1,44 @@
 {
   "name": "mcp-code-mode-demo",
   "version": "1.0.0",
-  "description": "MCP Code Mode 实现示例",
+  "description": "MCP Code Mode - Execute TypeScript in sandbox with MCP tools",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "generate-api": "tsx src/generator.ts",
-    "example": "tsx examples/basic.ts"
+    "generate-api": "tsx examples/generate-api.ts",
+    "example": "tsx examples/basic.ts",
+    "server": "tsx src/server.ts",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest --watch"
   },
+  "keywords": [
+    "mcp",
+    "code-mode",
+    "sandbox",
+    "typescript",
+    "ipc"
+  ],
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
-    "@anthropic-ai/sandbox-runtime": "^0.1.0",
     "@modelcontextprotocol/sdk": "^1.0.4"
   },
   "devDependencies": {
-    "@types/node": "^22.10.2",
+    "@types/node": "^22.19.0",
+    "@vitest/coverage-v8": "^4.0.8",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
-  }
+    "typescript": "^5.7.2",
+    "vitest": "^4.0.8"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cexll/code-mode-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cexll/code-mode-mcp/issues"
+  },
+  "homepage": "https://github.com/cexll/code-mode-mcp#readme"
 }
