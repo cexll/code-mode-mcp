@@ -7,8 +7,8 @@
   "scripts": {
     "build": "tsc",
     "generate-api": "tsx examples/generate-api.ts",
-    "example": "npx srt --settings .srt-settings.json tsx examples/basic.ts",
-    "example:unsafe": "tsx examples/basic.ts",
+    "example": "npx srt --settings .srt-settings.json tsx examples/concept-demo.ts",
+    "example:unsafe": "tsx examples/concept-demo.ts",
     "server": "npx srt --settings .srt-settings.json tsx src/server.ts",
     "server:unsafe": "tsx src/server.ts",
     "test": "vitest",

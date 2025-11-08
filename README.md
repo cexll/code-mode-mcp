@@ -18,10 +18,7 @@ npm run generate-api
 # 3. 构建项目
 npm run build
 
-# 4. 本地测试
-node test-mcp-simple.mjs
-
-# 5. 运行测试套件
+# 4. 运行测试套件
 npm test
 ```
 
@@ -147,8 +144,6 @@ npm test
 # 查看覆盖率
 npm run test:coverage
 ```
-
-覆盖率：99.41% 语句、100% 行、100% 函数
 
 ---
 
