@@ -7,8 +7,10 @@
   "scripts": {
     "build": "tsc",
     "generate-api": "tsx examples/generate-api.ts",
-    "example": "tsx examples/basic.ts",
-    "server": "tsx src/server.ts",
+    "example": "npx srt --settings .srt-settings.json tsx examples/basic.ts",
+    "example:unsafe": "tsx examples/basic.ts",
+    "server": "npx srt --settings .srt-settings.json tsx src/server.ts",
+    "server:unsafe": "tsx src/server.ts",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -27,8 +29,15 @@
     "@modelcontextprotocol/sdk": "^1.0.4"
   },
   "devDependencies": {
+    "@anthropic-ai/sandbox-runtime": "^0.0.8",
     "@types/node": "^22.19.0",
+    "@typescript-eslint/eslint-plugin": "^8.46.3",
+    "@typescript-eslint/parser": "^8.46.3",
     "@vitest/coverage-v8": "^4.0.8",
+    "eslint": "^9.39.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6",
+    "prettier": "^3.6.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^4.0.8"
