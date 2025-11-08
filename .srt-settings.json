@@ -1,0 +1,38 @@
+{
+  "network": {
+    "allowedDomains": [
+      "npmjs.org",
+      "*.npmjs.org",
+      "registry.npmjs.org",
+      "github.com",
+      "*.github.com",
+      "api.github.com",
+      "raw.githubusercontent.com",
+      "objects.githubusercontent.com"
+    ],
+    "deniedDomains": [],
+    "allowUnixSockets": ["/tmp/claude", "/private/tmp/claude", "/var/folders"],
+    "allowLocalBinding": false
+  },
+  "filesystem": {
+    "denyRead": ["~/.ssh", "~/.aws", "~/.config/gcloud", "~/.gnupg", "~/.kube"],
+    "allowWrite": [".", ".sandbox-temp", "dist", "node_modules", "/tmp"],
+    "denyWrite": [
+      ".env",
+      ".env.*",
+      "secrets",
+      "secrets.*",
+      "credentials",
+      "credentials.*",
+      "*.key",
+      "*.pem"
+    ]
+  },
+  "ignoreViolations": {
+    "*": ["/usr/bin", "/System", "/Library", "/private/tmp"],
+    "npm": ["/private/tmp", "/var/folders"],
+    "tsx": ["/private/tmp", "/var/folders"],
+    "node": ["/private/tmp", "/var/folders"]
+  },
+  "enableWeakerNestedSandbox": false
+}
