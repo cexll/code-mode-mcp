@@ -128,7 +128,7 @@ MCP Servers (filesystem、fetch 等)
 ```
 src/
 ├── generator.ts        # MCP → TypeScript API 生成器
-├── simple-sandbox.ts   # 沙箱执行器（Node.js fork + IPC）
+├── sandbox.ts          # 沙箱执行器（Node.js fork + IPC）
 └── server.ts           # MCP Server 入口
 
 generated-api/
@@ -185,11 +185,93 @@ npm run test:coverage
 
 ---
 
+## 安全沙箱
+
+本项目集成了 [Anthropic Sandbox Runtime](https://github.com/anthropic-experimental/sandbox-runtime)，在 OS 级别限制进程的文件系统和网络访问权限。
+
+### 启用沙箱（默认）
+
+```bash
+# 使用沙箱保护运行 server
+npm run server
+
+# 使用沙箱保护运行 example
+npm run example
+```
+
+沙箱会自动限制：
+- **网络访问**：仅允许 npm/GitHub 域名
+- **文件读取**：拒绝 `~/.ssh`、`~/.aws` 等敏感目录
+- **文件写入**：仅允许当前目录、`.sandbox-temp`、`/tmp`
+- **敏感文件保护**：拒绝写入 `.env`、`*.key` 等文件
+
+### 配置沙箱权限
+
+编辑 `.srt-settings.json` 自定义权限：
+
+```json
+{
+  "network": {
+    "allowedDomains": ["example.com"],
+    "deniedDomains": []
+  },
+  "filesystem": {
+    "denyRead": ["~/.ssh"],
+    "allowWrite": ["."],
+    "denyWrite": [".env", "*.key"]
+  }
+}
+```
+
+**配置项说明：**
+
+- `network.allowedDomains`: 允许访问的域名（支持通配符 `*.example.com`）
+- `network.deniedDomains`: 拒绝访问的域名（优先级高于 allowedDomains）
+- `filesystem.denyRead`: 拒绝读取的路径
+- `filesystem.allowWrite`: 允许写入的路径（默认仅当前目录）
+- `filesystem.denyWrite`: 拒绝写入的路径（优先级高于 allowWrite）
+
+路径支持：
+- 绝对路径：`/etc/passwd`
+- 相对路径：`./src`
+- 用户目录：`~/.ssh`
+- Glob 模式（macOS）：`src/**/*.ts`
+
+### 禁用沙箱
+
+测试或开发时可禁用沙箱：
+
+```bash
+# 不使用沙箱运行（风险自负）
+npm run server:unsafe
+npm run example:unsafe
+```
+
+**注意**：测试套件默认不使用沙箱（`npm test` 直接运行），因为测试框架需要更宽松的权限。
+
+### 平台依赖
+
+- **macOS**: 无需额外依赖（使用系统自带 `sandbox-exec`）
+- **Linux**: 需要安装 `bubblewrap`、`socat`、`ripgrep`
+  ```bash
+  # Ubuntu/Debian
+  sudo apt-get install bubblewrap socat ripgrep
+
+  # Fedora
+  sudo dnf install bubblewrap socat ripgrep
+
+  # Arch
+  sudo pacman -S bubblewrap socat ripgrep
+  ```
+
+---
+
 ## 安全建议
 
-- 代码在子进程中隔离执行
-- filesystem 工具默认限制访问范围
-- 生产环境建议配置资源限制（CPU/内存）
+- ✅ **已集成 OS 级沙箱**（Anthropic Sandbox Runtime）
+- ✅ **子进程隔离执行** + IPC 通信
+- ✅ **文件系统/网络白名单控制**
+- 建议生产环境额外配置资源限制（CPU/内存）
 - 可选：容器级/系统级额外隔离
 
 ---
