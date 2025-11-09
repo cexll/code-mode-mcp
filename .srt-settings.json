@@ -6,9 +6,16 @@
       "registry.npmjs.org",
       "github.com",
       "*.github.com",
+      "gist.github.com",
       "api.github.com",
       "raw.githubusercontent.com",
-      "objects.githubusercontent.com"
+      "objects.githubusercontent.com",
+      "httpbin.org",
+      "*.httpbin.org",
+      "anthropic.com",
+      "*.anthropic.com",
+      "cloudflare.com",
+      "*.cloudflare.com"
     ],
     "deniedDomains": [],
     "allowUnixSockets": ["/tmp/claude", "/private/tmp/claude", "/var/folders"],
@@ -16,7 +23,14 @@
   },
   "filesystem": {
     "denyRead": ["~/.ssh", "~/.aws", "~/.config/gcloud", "~/.gnupg", "~/.kube"],
-    "allowWrite": [".", ".sandbox-temp", "dist", "node_modules", "/tmp"],
+    "allowWrite": [
+      ".",
+      ".sandbox-temp",
+      "dist",
+      "node_modules",
+      "/tmp",
+      "test-workspace"
+    ],
     "denyWrite": [
       ".env",
       ".env.*",
@@ -34,5 +48,5 @@
     "tsx": ["/private/tmp", "/var/folders"],
     "node": ["/private/tmp", "/var/folders"]
   },
-  "enableWeakerNestedSandbox": false
+  "enableWeakerNestedSandbox": true
 }

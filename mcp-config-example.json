@@ -1,11 +1,14 @@
 {
   "mcpServers": {
     "code-mode": {
-      "command": "node",
+      "command": "npx",
       "args": [
+        "@anthropic-ai/srt",
+        "run",
+        "node",
         "/Users/chenwenjie/Downloads/mcp-code-mode-demo/dist/server.js"
       ],
-      "description": "Code Mode - 在沙箱中执行 TypeScript 代码，可调用 MCP 工具（filesystem、fetch）",
+      "description": "Code Mode - TypeScript 沙箱执行，内置 filesystem 和 fetch 工具（通过 srt 代理实现网络访问）。",
       "env": {
         "NODE_OPTIONS": "--no-warnings"
       }
