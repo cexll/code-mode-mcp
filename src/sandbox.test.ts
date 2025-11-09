@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { Sandbox } from "./sandbox.js";
 import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import * as fsp from "fs/promises";
+import * as path from "path";
 
 describe("Sandbox", () => {
   let sandbox: Sandbox;

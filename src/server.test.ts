@@ -77,7 +77,6 @@ vi.mock("./sandbox.js", () => {
     .mockResolvedValue({ success: true, output: "MOCK_OUTPUT" });
 
   class Sandbox {
-     
     constructor(_mcpClients: Map<string, any>) {}
     async initialize() {
       return initializeMock();
@@ -196,17 +195,6 @@ describe("MCP Server (src/server.ts)", () => {
     mockListToolsMap.set("fetch", {
       tools: [{ name: "fetch", description: "Fetch URL" }],
     });
-    mockListToolsMap.set("sequential-thinking", {
-      tools: [
-        { name: "sequentialthinking", description: "Sequential thinking" },
-      ],
-    });
-    mockListToolsMap.set("codex-cli", {
-      tools: [
-        { name: "ask-codex", description: "Ask Codex" },
-        { name: "batch-codex", description: "Batch Codex" },
-      ],
-    });
 
     const callHandler = handlers.get(CallToolRequestSchema)!;
     const res = await callHandler({
@@ -220,56 +208,34 @@ describe("MCP Server (src/server.ts)", () => {
     expect(text).toContain("可用工具:");
     expect(text).toContain("servers/");
 
-    // 验证包含所有 servers
+    // 验证包含内置工具 servers
     expect(text).toContain("filesystem/");
     expect(text).toContain("fetch/");
-    expect(text).toContain("sequential-thinking/");
-    expect(text).toContain("codex-cli/");
 
     // 验证包含工具名称
     expect(text).toContain("read_file");
     expect(text).toContain("write_file");
     expect(text).toContain("list_directory");
     expect(text).toContain("fetch");
-    expect(text).toContain("sequentialthinking");
-    expect(text).toContain("ask-codex");
-    expect(text).toContain("batch-codex");
 
     // 验证树状结构符号存在
     expect(text).toMatch(/[├└]/); // Tree branch symbols
-
-    // 验证 listTools 被调用
-    expect(listToolsMock).toHaveBeenCalled();
   });
 
-  it("list_available_tools：处理 listTools 失败的 server", async () => {
-    // 设置 mock：一个成功，一个失败
-    mockListToolsMap.set("filesystem", {
-      tools: [{ name: "read_file", description: "Read a file" }],
-    });
-    mockListToolsMap.set("fetch", {
-      shouldFail: true,
-      error: "Connection timeout",
-    });
-
+  it("get_connection_status: 返回工具状态", async () => {
     const callHandler = handlers.get(CallToolRequestSchema)!;
     const res = await callHandler({
-      params: { name: "list_available_tools", arguments: {} },
+      params: { name: "get_connection_status", arguments: {} },
     });
 
+    expect(Array.isArray(res.content)).toBe(true);
+    expect(res.content[0]?.type).toBe("text");
+
     const text = String(res.content[0]?.text);
-
-    // 成功的 server 应该显示
-    expect(text).toContain("filesystem/");
-    expect(text).toContain("read_file");
-
-    // 失败的 server 应该显示错误信息
-    expect(text).toContain("fetch/");
-    expect(text).toContain("获取失败");
-    expect(text).toContain("Connection timeout");
-
-    // 不应该抛出错误，而是继续处理
-    expect(res.isError).toBeUndefined();
+    expect(text).toContain("MCP 工具状态");
+    expect(text).toContain("filesystem");
+    expect(text).toContain("fetch");
+    expect(text).toContain("内置实现");
   });
 
   it("未知工具名称时抛出错误", async () => {
