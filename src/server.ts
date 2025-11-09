@@ -21,8 +21,8 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { Sandbox } from "./sandbox.js";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { createBuiltinTools, type BuiltinMCPClient } from "./builtin-tools.js";
+import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
 
 const DEBUG = process.env.SANDBOX_DEBUG === "true";
 
@@ -40,27 +40,8 @@ const server = new Server(
 
 // 全局沙箱实例和 MCP clients
 let sandbox: Sandbox | null = null;
-const mcpClients = new Map<string, Client>();
-
-/**
- * 连接到指定的 MCP server
- */
-async function connectMCPServer(
-  serverName: string,
-  command: string,
-  args: string[],
-) {
-  const transport = new StdioClientTransport({ command, args });
-  const client = new Client(
-    { name: `code-mode-${serverName}`, version: "1.0.0" },
-    { capabilities: {} },
-  );
-
-  await client.connect(transport);
-  mcpClients.set(serverName, client);
-  if (DEBUG) console.error(`✅ 已连接 MCP server: ${serverName}`);
-  return client;
-}
+// 使用联合类型支持内置工具和外部 MCP clients
+const mcpClients = new Map<string, Client | BuiltinMCPClient>();
 
 /**
  * 动态生成工具树
@@ -100,38 +81,35 @@ async function generateToolsTree(): Promise<string> {
 }
 
 /**
- * 初始化沙箱
+ * 初始化沙箱（使用内置工具，避免 stdio 冲突）
+ *
+ * 架构说明：
+ * - 当 code-mode 作为 MCP server 运行时，其 stdio 已被 Claude Code 占用
+ * - 无法再通过 stdio 连接其他 MCP servers（会导致连接超时）
+ * - 解决方案：使用进程内实现的内置工具，避免 stdio 冲突
  */
 async function initializeSandbox() {
   if (!sandbox) {
-    // 连接 MCP servers（使用 claude mcp list 显示的配置）
-    await connectMCPServer("filesystem", "npx", [
-      "-y",
-      "@modelcontextprotocol/server-filesystem",
-      process.cwd(),
-    ]);
+    // 使用内置工具实现，避免 stdio 通道冲突
+    const builtinTools = createBuiltinTools();
 
-    // 使用正确的 fetch server（从 git 安装）
-    await connectMCPServer("fetch", "uvx", [
-      "--from",
-      "git+https://github.com/cexll/mcp-server-fetch.git",
-      "mcp-server-fetch",
-    ]);
-    // 3: sequential-thinking
-    await connectMCPServer("sequential-thinking", "npx", [
-      "-y",
-      "mcp-sequentialthinking-tools",
-    ]);
+    // 将内置工具添加到 mcpClients Map
+    builtinTools.forEach((tool, name) => {
+      mcpClients.set(name, tool);
+    });
 
-    // 3: codex-cli
-    await connectMCPServer("codex-cli", "npx", [
-      "-y",
-      "@cexll/codex-mcp-server",
-    ]);
+    if (DEBUG) {
+      const connectedServers = Array.from(mcpClients.keys()).join(", ");
+      console.error(
+        `📊 MCP 工具已加载: ${mcpClients.size} 个 (${connectedServers})`,
+      );
+      console.error("💡 使用内置实现，避免 stdio 冲突");
+    }
 
+    // 初始化沙箱
     sandbox = new Sandbox(mcpClients);
-
     await sandbox.initialize();
+
     if (DEBUG) console.error("✅ 沙箱已初始化");
   }
 }
@@ -167,6 +145,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: "list_available_tools",
         description: "列出沙箱中可用的 MCP 工具（文件树结构）",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+      {
+        name: "get_connection_status",
+        description: "获取 MCP 服务器连接状态和错误信息",
         inputSchema: {
           type: "object",
           properties: {},
@@ -218,6 +204,29 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         {
           type: "text",
           text: toolsTree,
+        },
+      ],
+    };
+  } else if (request.params.name === "get_connection_status") {
+    // 生成连接状态报告
+    const statusLines: string[] = ["=== MCP 工具状态 ===\n"];
+
+    if (mcpClients.size === 0) {
+      statusLines.push("⚠️  未加载任何工具");
+    } else {
+      for (const serverName of mcpClients.keys()) {
+        statusLines.push(`✅ ${serverName}: 可用（内置实现）`);
+      }
+    }
+
+    statusLines.push(`\n总计: ${mcpClients.size} 个工具可用`);
+    statusLines.push("\n💡 使用进程内实现，避免 stdio 冲突");
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: statusLines.join("\n"),
         },
       ],
     };

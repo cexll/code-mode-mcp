@@ -4,21 +4,25 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+import type { BuiltinMCPClient } from "./builtin-tools.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const DEBUG = process.env.SANDBOX_DEBUG === "true";
 
+// 定义通用 MCP 客户端接口，兼容 SDK Client 和内置工具
+export type MCPClientLike = Client | BuiltinMCPClient;
+
 /**
  * 简化版代码执行器
  * 直接使用 Node.js 执行，避免复杂的沙箱配置
  */
 export class Sandbox {
-  private mcpClients: Map<string, Client>;
+  private mcpClients: Map<string, MCPClientLike>;
   private tempDir: string;
 
-  constructor(mcpClients: Map<string, Client>) {
+  constructor(mcpClients: Map<string, MCPClientLike>) {
     this.mcpClients = mcpClients;
     // 使用每实例唯一的临时目录，避免并发测试/执行间相互干扰
     const uniq = `${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -56,10 +60,9 @@ export class Sandbox {
         const linkType = process.platform === "win32" ? "junction" : "dir";
         try {
           // 优先创建符号链接（Windows 使用 junction 提高兼容性）
-          // @ts-expect-error Node 的类型定义允许此第三参数取 'dir' | 'junction'
           await fs.symlink(serversTargetPath, serversLinkPath, linkType);
         } catch (err: unknown) {
-          const error = err as { code?: string };
+          const error = err as { code?: string; message?: string };
           // 某些平台（或低权限环境）可能无法创建符号链接，降级为目录复制
           if (error?.code === "EEXIST") {
             // 并发情况下可能已被创建，忽略
@@ -73,7 +76,9 @@ export class Sandbox {
             });
           } else {
             // 其他错误保留但不阻断初始化
-            console.error(`⚠️ 创建 servers 链接失败: ${err?.message ?? err}`);
+            console.error(
+              `⚠️ 创建 servers 链接失败: ${error?.message ?? error?.code ?? String(err)}`,
+            );
           }
         }
       }
@@ -191,6 +196,7 @@ export class Sandbox {
           // 调试日志：收到子进程的工具调用请求
           if (DEBUG)
             console.error(`🔗 [sandbox] recv call → ${serverName}.${toolName}`);
+
           const client = this.mcpClients.get(serverName);
           if (!client) {
             const resp: IPCResponse = {
@@ -202,10 +208,24 @@ export class Sandbox {
             return;
           }
 
-          const toolResult = await client.callTool({
+          // 为 MCP 工具调用添加超时（30秒），避免长时间挂起
+          const toolCallPromise = client.callTool({
             name: toolName,
             arguments: args,
           });
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(
+              () =>
+                reject(
+                  new Error(`Tool call timeout: ${serverName}.${toolName}`),
+                ),
+              30000,
+            ),
+          );
+          const toolResult = await Promise.race([
+            toolCallPromise,
+            timeoutPromise,
+          ]);
           if (DEBUG)
             console.error(`✅ [sandbox] tool ok → ${serverName}.${toolName}`);
           const resp: IPCResponse = { type: "result", id, data: toolResult };
